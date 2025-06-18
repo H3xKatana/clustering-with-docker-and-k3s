@@ -19,7 +19,7 @@ services:
         - main-network
 
   vote:
-    image: vote:vote_app
+    image: vote:latest
     build: 
       context: ./vote
       dockerfile: Dockerfile
@@ -32,7 +32,7 @@ services:
       - main-network
 
   result:
-    image: result:result_app
+    image: result:latest
     build: ./result
     ports:
       - "8081:8080"
@@ -42,7 +42,7 @@ services:
       - main-network
 
   worker:  
-    image: worker:worker_app
+    image: worker:latest
     build: ./worker
     depends_on:
       - db
