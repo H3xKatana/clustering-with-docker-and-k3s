@@ -2,9 +2,12 @@
 
 ## Learning Clustering and Container Orchestration
 
-### With Docker Swarm and Kubernetes (k3s)
+> 📁 **All deployment files and important notes are available in the `deploy/` folder.**
+> It includes Docker Swarm deployment files with explanations, as well as Kubernetes (k8s) manifests and documentation.
 
-This project documents my learning journey into container orchestration using both **Docker Swarm** and **Kubernetes (k3s)**.
+###  Docker Swarm and Kubernetes (k3s)
+
+This project documents my learning journey into container orchestration using both **Docker Swarm** and **Kubernetes (k3s)**  and since learning by  applying  is my favourite method . i'll use  real project and try to deploy it with docker swarm and k8s .
 
 To demonstrate concepts, I’ll be using the **[Example Voting App](https://github.com/dockersamples/example-voting-app)** –
 a simple distributed microservices-based application that runs across multiple Docker containers.
@@ -36,12 +39,6 @@ The **Example Voting App** is a great way to explore:
 * ☸️ Kubernetes Course by [DevOps Directive](https://github.com/sidpalas/devops-directive-kubernetes-course)
 * 💡 Kubernetes Labs: [kode.wiki/kubernetes-labs](https://kode.wiki/kubernetes-labs)
 * 🎓 YouTube: [Kodeploy Kubernetes Crash Course](https://youtu.be/XuSQU5Grv1g?si=kwEQcBQUEWfcPHXk)
-
-
-
---- 
-you can use this as a base to learn docker swarm and kubernetess
-
-
+* 🧪 LABS :[application LABS for docker and k8s](https://studio.kodekloud.com/labs)
 
 
