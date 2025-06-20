@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: db
+  labels:
+    app: vote-app
+    name:  db-pod
+spec:
+  containers: 
+  - name: db
+    image:  postgres:15-alpine 
+    ports:
+    - containerPort: 5432
+    env:
+      - name: POSTGRES_USER
+        value: postgres
+      - name:  POSTGRES_PASSWORD 
+        value: postgres
+      
+
