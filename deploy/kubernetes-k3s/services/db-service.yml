@@ -1,0 +1,20 @@
+# service is like a dns / proxy in kubernetes
+# used for mapping a ip to a hostname or a port to an external port 
+# and it has 3 main types LoadBalancer | ClusterIP | NodePort
+
+
+kind:  Service
+apiVersion: v1
+metadata:
+  name:  db-service
+  labels:
+    name:  db-service
+    app: vote-app
+spec:
+  selector: 
+    app: vote-app
+    name:  db-pod
+  ports:
+  - port:  5432
+    targetPort:  5432
+  

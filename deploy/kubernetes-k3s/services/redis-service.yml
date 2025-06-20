@@ -1,0 +1,17 @@
+# service is like a dns / proxy in kubernetes
+# used for mapping a ip to a hostname or a port to an external port 
+# and it has 3 main types LoadBalancer | ClusterIP | NodePort
+
+
+kind:  Service
+apiVersion: v1
+metadata:
+  name:  redis
+spec:
+  selector: 
+    name:  redis-pod
+    app: vote-app
+  ports:
+  - port:  6379
+    targetPort:  6379
+  
