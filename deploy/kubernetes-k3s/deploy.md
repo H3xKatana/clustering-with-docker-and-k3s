@@ -56,5 +56,10 @@ kubectl get pods
 kubectl get svc
 ```
 
----
+#  deployment for testing only
+Apply your Kubernetes configuration files:
 
+```bash
+kubectl apply  -f deployments/
+kubectl apply  -f services/
+```
