@@ -64,3 +64,9 @@ famous ones
 
 
  
+### K8S docs
+
+    you can get help of kubernetes 
+    kubectl --help 
+    kubectl [func] --help
+    kubectl expalin [resource type ]
