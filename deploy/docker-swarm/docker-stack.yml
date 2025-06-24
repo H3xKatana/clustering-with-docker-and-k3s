@@ -22,7 +22,7 @@ services:
         - main-network
 
   vote:
-    image: vote:latest
+    image: 0xkatana/vote:latest
     
     ports:
       - "8080:80"  
@@ -34,7 +34,7 @@ services:
       replicas: 2
 
   result:
-    image : result:latest
+    image : 0xkatana/result:latest
     ports:
       - "8081:8080"
     depends_on:
@@ -43,7 +43,7 @@ services:
       - main-network
 
   worker:  
-    image: worker:latest
+    image: 0xkatana/worker:latest
     depends_on:
       - db
       - redis
