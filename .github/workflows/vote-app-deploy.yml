@@ -1,21 +1,39 @@
 name: Deploy Pipeline Workflow
-
+# i we wrote the worflow just for fun and on how to do it manually
+# i had some issues with the previous workflow also
+# this worflow is not production ready 
+# it is a simple example on how to deploy a docker stack to a VPS using GitHub Actions
+# the worflow will be refactored and refined in the future
 on:
   push:
     branches:
       - main
 
-    # This workflow will deploy the application to a VPS
 jobs:
-  run-deploy:
+  deploy:
     if: contains(github.event.head_commit.message, 'deploy')
     runs-on: ubuntu-latest
+
     steps:
-      - name: Docker stack deploy
-        uses: cssnr/stack-deploy-action@v1
-        with:
-          name: vote-app
-          file: deploy/docker-swarm/docker-stack.yml
-          host: ${{ secrets.VPS_HOST }}
-          user: ${{ secrets.VPS_USER }}
-          ssh_key: ${{ secrets.VPS_SSH_KEY }}
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Copy docker stack file to VPS
+        run: |
+          scp -i ~/.ssh/id_rsa deploy/docker-swarm/docker-stack.yml \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/home/${{ secrets.VPS_USER }}/docker-stack.yml
+
+      - name: Deploy with docker stack
+        # this step will use ssh key to connect to the vps and deploy stack 
+        # it will work only if docker is installed and a swarm is initialized 
+        # future steps will include better error handling 
+        run: |
+          ssh -i ~/.ssh/id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+            "sudo docker stack deploy --compose-file /home/${{ secrets.VPS_USER }}/docker-stack.yml vote-app"
