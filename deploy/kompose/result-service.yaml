@@ -8,9 +8,11 @@ metadata:
     io.kompose.service: result
   name: result
 spec:
+  type: NodePort
   ports:
     - name: "8081"
       port: 8081
       targetPort: 8080
+      nodePort: 30081
   selector:
     io.kompose.service: result

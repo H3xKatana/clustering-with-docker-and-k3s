@@ -8,9 +8,11 @@ metadata:
     io.kompose.service: vote
   name: vote
 spec:
+  type: NodePort
   ports:
     - name: "8080"
       port: 8080
       targetPort: 80
+      nodePort: 30080
   selector:
     io.kompose.service: vote
