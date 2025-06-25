@@ -11,7 +11,7 @@ on:
 
 jobs:
   deploy:
-    if: contains(github.event.head_commit.message, 'deploy')
+    if: contains(github.event.head_commit.message, 'deploy stack')
     runs-on: ubuntu-latest
 
     steps:
