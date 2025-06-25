@@ -27,27 +27,27 @@ jobs:
     - name: Build and push Vote app
       uses: docker/build-push-action@v4
       with:
-        context: ./vote
+        context: ./apps/vote
         push: true
         tags: ${{ secrets.DOCKER_USERNAME }}/vote:latest
 
     - name: Build and push Result app
       uses: docker/build-push-action@v4
       with:
-        context: ./result
+        context: ./apps/result
         push: true
         tags: ${{ secrets.DOCKER_USERNAME }}/result:latest
 
     - name: Build and push Worker app
       uses: docker/build-push-action@v4
       with:
-        context: ./worker
+        context: ./apps/worker
         push: true
         tags: ${{ secrets.DOCKER_USERNAME }}/worker:latest
 
     - name: Build and push Seed Data app
       uses: docker/build-push-action@v4
       with:
-        context: ./seed-data
+        context: ./apps/seed-data
         push: true
         tags: ${{ secrets.DOCKER_USERNAME }}/seed-data:latest
