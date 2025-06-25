@@ -21,7 +21,7 @@ spec:
         io.kompose.service: result
     spec:
       containers:
-        - image: result:latest
+        - image: 0xkatana/result:latest
           name: result
           ports:
             - containerPort: 8080

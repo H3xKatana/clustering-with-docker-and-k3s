@@ -21,7 +21,7 @@ spec:
         io.kompose.service: vote
     spec:
       containers:
-        - image: vote:latest
+        - image: 0xkatana/vote:latest
           name: vote
           ports:
             - containerPort: 80

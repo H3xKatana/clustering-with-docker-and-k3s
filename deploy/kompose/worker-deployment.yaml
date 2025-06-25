@@ -21,6 +21,6 @@ spec:
         io.kompose.service: worker
     spec:
       containers:
-        - image: worker:latest
+        - image: 0xkatana/worker:latest
           name: worker
       restartPolicy: Always
