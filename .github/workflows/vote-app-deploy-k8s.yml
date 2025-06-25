@@ -1,0 +1,54 @@
+name: Deploy k8s Pipeline Workflow
+# i we wrote the worflow just for fun and on how to do it manually
+# i had some issues with the previous workflow also
+# this worflow is not production ready 
+# it is a simple example on how to deploy a kubernetes objects to a VPS using GitHub Actions
+# the worflow will be refactored and refined in the future
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  deploy:
+    if: contains(github.event.head_commit.message, 'deploy k8s')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up SSH key and known hosts
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "${VPS_SSH_KEY}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H "$VPS_HOST" > ~/.ssh/known_hosts
+
+      - name: Copy Kubernetes manifests to VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          scp -i ~/.ssh/id_rsa -r deploy/kubernetes-k3s/deploy/ \
+            "${VPS_USER}@${VPS_HOST}:/home/${VPS_USER}/deploy/"
+
+
+        # this step will use ssh key to connect to the vps 
+        # it will work only if k3s is installed and working on the VPS 
+        # future steps will include better error handling and robust deployment
+        
+      - name: Apply manifests on VPS via SSH
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          ssh -i ~/.ssh/id_rsa "${VPS_USER}@${VPS_HOST}" << 'EOF'
+            sudo k3s kubectl apply -f ~/deploy/services/
+            sudo k3s kubectl apply -f ~/deploy/deployments/
+          EOF
