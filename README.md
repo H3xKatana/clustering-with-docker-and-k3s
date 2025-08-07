@@ -32,6 +32,16 @@ The **Example Voting App** is a great way to explore:
 * Orchestrating deployments using Docker Swarm and Kubernetes
 
 ---
+### Architecture Diagrams 
+#### Repositry layout :
+![diagram_1](https://github.com/H3xKatana/clustering-with-docker-and-k3s/blob/main/docs/images/diagram_1.jpg)
+#### CI/CD Pipline workflow :
+![diagram_2](https://github.com/H3xKatana/clustering-with-docker-and-k3s/blob/main/docs/images/diagram_2.jpg)
+
+
+---
+
+
 
 ### 📚 Learning Resources
 
