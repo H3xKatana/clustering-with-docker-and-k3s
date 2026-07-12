@@ -1,5 +1,5 @@
-from flask import Flask, render_template, request, make_response, g
-from redis import Redis
+from flask import Flask, render_template, request, make_response
+from google.cloud import pubsub_v1
 import os
 import socket
 import random
@@ -9,6 +9,7 @@ import logging
 option_a = os.getenv('OPTION_A', "Cats")
 option_b = os.getenv('OPTION_B', "Dogs")
 hostname = socket.gethostname()
+port = int(os.getenv('PORT', '8080'))
 
 app = Flask(__name__)
 
@@ -16,12 +17,14 @@ gunicorn_error_logger = logging.getLogger('gunicorn.error')
 app.logger.handlers.extend(gunicorn_error_logger.handlers)
 app.logger.setLevel(logging.INFO)
 
-def get_redis():
-    if not hasattr(g, 'redis'):
-        g.redis = Redis(host="redis", db=0, socket_timeout=5)
-    return g.redis
+# PubSub publisher — initialized once, no Redis
+publisher = pubsub_v1.PublisherClient()
+topic_path = publisher.topic_path(
+    os.environ['GOOGLE_CLOUD_PROJECT'],
+    os.environ.get('PUBSUB_TOPIC_ID', 'votes')
+)
 
-@app.route("/", methods=['POST','GET'])
+@app.route("/", methods=['POST', 'GET'])
 def hello():
     voter_id = request.cookies.get('voter_id')
     if not voter_id:
@@ -30,11 +33,10 @@ def hello():
     vote = None
 
     if request.method == 'POST':
-        redis = get_redis()
         vote = request.form['vote']
         app.logger.info('Received vote for %s', vote)
-        data = json.dumps({'voter_id': voter_id, 'vote': vote})
-        redis.rpush('votes', data)
+        data = json.dumps({'voter_id': voter_id, 'vote': vote}).encode('utf-8')
+        publisher.publish(topic_path, data)
 
     resp = make_response(render_template(
         'index.html',
@@ -48,4 +50,4 @@ def hello():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=80, debug=True, threaded=True)
+    app.run(host='0.0.0.0', port=port, debug=True, threaded=True)
