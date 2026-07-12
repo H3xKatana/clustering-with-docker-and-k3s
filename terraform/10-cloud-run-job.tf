@@ -4,6 +4,7 @@ resource "google_cloud_run_v2_job" "seed_data" {
   name     = "seed-data-gcp"
   location = var.region
   project  = var.project_id
+  labels   = local.common_labels
 
   template {
     template {

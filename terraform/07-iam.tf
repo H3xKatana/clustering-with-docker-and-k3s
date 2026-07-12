@@ -69,3 +69,16 @@ resource "google_cloud_run_service_iam_member" "worker_invoker" {
   role     = "roles/run.invoker"
   member   = "serviceAccount:${google_service_account.worker_sa.email}"
 }
+
+# Worker SA needs Cloud Build + Cloud Run Deploy for the trigger
+resource "google_project_iam_member" "worker_cloudbuild" {
+  project = var.project_id
+  role    = "roles/cloudbuild.builds.builder"
+  member  = "serviceAccount:${google_service_account.worker_sa.email}"
+}
+
+resource "google_project_iam_member" "worker_run_deploy" {
+  project = var.project_id
+  role    = "roles/run.developer"
+  member  = "serviceAccount:${google_service_account.worker_sa.email}"
+}
