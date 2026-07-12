@@ -87,48 +87,25 @@ CLOUD_SQL_CONN  := $(PROJECT_ID):$(REGION):vote-app-db
 DB_HOST         := /cloudsql/$(CLOUD_SQL_CONN)
 DB_ENV_VARS     := DB_USER=app_user,DB_PASSWORD=$(DB_PASSWORD),DB_NAME=votes,DB_HOST=$(DB_HOST)
 
-deploy-vote: ## Deploy vote-gcp to Cloud Run (public)
-	@VOTE_SA=$$(terraform -chdir=$(TF_DIR) output -raw vote_sa_email); \
+deploy-vote: ## Deploy vote-gcp — update image only (Terraform manages config)
 	gcloud run deploy vote-gcp \
 		--image $(REPO_PREFIX)/vote-gcp:latest \
-		--region $(REGION) \
-		--allow-unauthenticated \
-		--add-cloudsql-instances $(CLOUD_SQL_CONN) \
-		--set-env-vars "PUBSUB_TOPIC_ID=votes,GOOGLE_CLOUD_PROJECT=$(PROJECT_ID)" \
-		--service-account $$VOTE_SA
+		--region $(REGION)
 
-deploy-result: ## Deploy result-gcp to Cloud Run (public)
-	@RESULT_SA=$$(terraform -chdir=$(TF_DIR) output -raw result_sa_email); \
+deploy-result: ## Deploy result-gcp — update image only (Terraform manages config)
 	gcloud run deploy result-gcp \
 		--image $(REPO_PREFIX)/result-gcp:latest \
-		--region $(REGION) \
-		--allow-unauthenticated \
-		--add-cloudsql-instances $(CLOUD_SQL_CONN) \
-		--set-env-vars "$(DB_ENV_VARS)" \
-		--service-account $$RESULT_SA
+		--region $(REGION)
 
-deploy-worker-gcp: ## Deploy worker-gcp to Cloud Run (internal — PubSub push only)
-	@WORKER_SA=$$(terraform -chdir=$(TF_DIR) output -raw worker_sa_email); \
+deploy-worker-gcp: ## Deploy worker-gcp — update image only (Terraform manages config)
 	gcloud run deploy worker-gcp \
 		--image $(REPO_PREFIX)/worker-gcp:latest \
-		--region $(REGION) \
-		--no-allow-unauthenticated \
-		--add-cloudsql-instances $(CLOUD_SQL_CONN) \
-		--set-env-vars "$(DB_ENV_VARS)" \
-		--service-account $$WORKER_SA
+		--region $(REGION)
 
-deploy-seed-data: ## Create/update seed-data-gcp as Cloud Run Job
-	@SEED_SA=$$(terraform -chdir=$(TF_DIR) output -raw seed_sa_email); \
-	gcloud run jobs create seed-data-gcp \
-		--image $(REPO_PREFIX)/seed-data-gcp:latest \
-		--region $(REGION) \
-		--set-cloudsql-instances $(CLOUD_SQL_CONN) \
-		--set-env-vars "$(DB_ENV_VARS)" \
-		--service-account $$SEED_SA 2>/dev/null || \
+deploy-seed-data: ## Deploy seed-data-gcp — update image only (Terraform manages config)
 	gcloud run jobs update seed-data-gcp \
 		--image $(REPO_PREFIX)/seed-data-gcp:latest \
-		--region $(REGION) \
-		--service-account $$SEED_SA
+		--region $(REGION)
 
 update-subscription: ## Point PubSub push subscription to worker-gcp URL
 	@echo "Fetching worker-gcp URL..."; \

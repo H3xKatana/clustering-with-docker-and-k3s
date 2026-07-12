@@ -1,0 +1,78 @@
+steps:
+  # Build and push all 4 images
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/vote-app/vote-gcp:$SHORT_SHA
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/vote-app/vote-gcp:latest
+      - apps/vote-gcp
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/vote-app/result-gcp:$SHORT_SHA
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/vote-app/result-gcp:latest
+      - apps/result-gcp
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/vote-app/worker-gcp:$SHORT_SHA
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/vote-app/worker-gcp:latest
+      - apps/worker-gcp
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/vote-app/seed-data-gcp:$SHORT_SHA
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/vote-app/seed-data-gcp:latest
+      - apps/seed-data-gcp
+
+  # Deploy Cloud Run services
+  - name: gcr.io/cloud-builders/gcloud
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        gcloud run deploy vote-gcp \
+          --image ${_REGION}-docker.pkg.dev/$PROJECT_ID/vote-app/vote-gcp:$SHORT_SHA \
+          --region ${_REGION} \
+          --allow-unauthenticated \
+          --set-env-vars "PUBSUB_TOPIC_ID=votes,GOOGLE_CLOUD_PROJECT=$PROJECT_ID"
+
+  - name: gcr.io/cloud-builders/gcloud
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        gcloud run deploy result-gcp \
+          --image ${_REGION}-docker.pkg.dev/$PROJECT_ID/vote-app/result-gcp:$SHORT_SHA \
+          --region ${_REGION} \
+          --allow-unauthenticated \
+          --set-env-vars "DB_USER=app_user,DB_PASSWORD=${_DB_PASSWORD},DB_NAME=votes,DB_HOST=/cloudsql/$PROJECT_ID:${_REGION}:vote-app-db"
+
+  - name: gcr.io/cloud-builders/gcloud
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        gcloud run deploy worker-gcp \
+          --image ${_REGION}-docker.pkg.dev/$PROJECT_ID/vote-app/worker-gcp:$SHORT_SHA \
+          --region ${_REGION} \
+          --no-allow-unauthenticated \
+          --set-env-vars "DB_USER=app_user,DB_PASSWORD=${_DB_PASSWORD},DB_NAME=votes,DB_HOST=/cloudsql/$PROJECT_ID:${_REGION}:vote-app-db"
+
+substitutions:
+  _REGION: us-central1
+  _DB_PASSWORD: super-secret-password
+
+options:
+  logging: CLOUD_LOGGING_ONLY
