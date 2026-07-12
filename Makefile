@@ -84,42 +84,51 @@ push-all: push-vote push-result push-worker-gcp push-seed-data ## Push all 4 ima
 # ─── Cloud Run helpers ─────────────────────────────────────────────────────────
 
 CLOUD_SQL_CONN  := $(PROJECT_ID):$(REGION):vote-app-db
-DB_HOST         := /cloudsql/$(CLOUD_SQL_CONN)/.s.PGSQL.5432
+DB_HOST         := /cloudsql/$(CLOUD_SQL_CONN)
 DB_ENV_VARS     := DB_USER=app_user,DB_PASSWORD=$(DB_PASSWORD),DB_NAME=votes,DB_HOST=$(DB_HOST)
 
 deploy-vote: ## Deploy vote-gcp to Cloud Run (public)
+	@VOTE_SA=$$(terraform -chdir=$(TF_DIR) output -raw vote_sa_email); \
 	gcloud run deploy vote-gcp \
 		--image $(REPO_PREFIX)/vote-gcp:latest \
 		--region $(REGION) \
 		--allow-unauthenticated \
 		--add-cloudsql-instances $(CLOUD_SQL_CONN) \
-		--set-env-vars "PUBSUB_TOPIC_ID=votes,GOOGLE_CLOUD_PROJECT=$(PROJECT_ID)"
+		--set-env-vars "PUBSUB_TOPIC_ID=votes,GOOGLE_CLOUD_PROJECT=$(PROJECT_ID)" \
+		--service-account $$VOTE_SA
 
 deploy-result: ## Deploy result-gcp to Cloud Run (public)
+	@RESULT_SA=$$(terraform -chdir=$(TF_DIR) output -raw result_sa_email); \
 	gcloud run deploy result-gcp \
 		--image $(REPO_PREFIX)/result-gcp:latest \
 		--region $(REGION) \
 		--allow-unauthenticated \
 		--add-cloudsql-instances $(CLOUD_SQL_CONN) \
-		--set-env-vars "$(DB_ENV_VARS)"
+		--set-env-vars "$(DB_ENV_VARS)" \
+		--service-account $$RESULT_SA
 
 deploy-worker-gcp: ## Deploy worker-gcp to Cloud Run (internal — PubSub push only)
+	@WORKER_SA=$$(terraform -chdir=$(TF_DIR) output -raw worker_sa_email); \
 	gcloud run deploy worker-gcp \
 		--image $(REPO_PREFIX)/worker-gcp:latest \
 		--region $(REGION) \
 		--no-allow-unauthenticated \
 		--add-cloudsql-instances $(CLOUD_SQL_CONN) \
-		--set-env-vars "$(DB_ENV_VARS)"
+		--set-env-vars "$(DB_ENV_VARS)" \
+		--service-account $$WORKER_SA
 
 deploy-seed-data: ## Create/update seed-data-gcp as Cloud Run Job
+	@SEED_SA=$$(terraform -chdir=$(TF_DIR) output -raw seed_sa_email); \
 	gcloud run jobs create seed-data-gcp \
 		--image $(REPO_PREFIX)/seed-data-gcp:latest \
 		--region $(REGION) \
-		--add-cloudsql-instances $(CLOUD_SQL_CONN) \
-		--set-env-vars "$(DB_ENV_VARS)" 2>/dev/null || \
+		--set-cloudsql-instances $(CLOUD_SQL_CONN) \
+		--set-env-vars "$(DB_ENV_VARS)" \
+		--service-account $$SEED_SA 2>/dev/null || \
 	gcloud run jobs update seed-data-gcp \
 		--image $(REPO_PREFIX)/seed-data-gcp:latest \
-		--region $(REGION)
+		--region $(REGION) \
+		--service-account $$SEED_SA
 
 update-subscription: ## Point PubSub push subscription to worker-gcp URL
 	@echo "Fetching worker-gcp URL..."; \
